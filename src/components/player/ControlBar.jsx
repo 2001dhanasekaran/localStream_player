@@ -1,4 +1,7 @@
-export default function ControlBar({ videoRef, togglePlay, isPlaying, progress, duration, handleSeek, currentTime }) {
+export default function ControlBar({ 
+    togglePlay, isPlaying, progress, duration, handleSeek, currentTime, 
+    volume, isMuted, toggleMute, handleVolumeChange 
+}) {
     const formatTime = (time) => {
         if(!time || isNaN(time)) return "00:00:00";
 
@@ -14,13 +17,29 @@ export default function ControlBar({ videoRef, togglePlay, isPlaying, progress, 
     
     return (
         <div className="bg-secondary p-2 d-flex align-items-center justify-content-center">
-            <div>
+            <div className="d-flex align-items-center">
                 <button className="btn btn-dark me-2" onClick={togglePlay}>
                     <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"}></i>
                 </button>
-                <button className="btn btn-dark me-2">
-                    <i className="bi bi-volume-up-fill"></i>
-                </button>
+                <div className="d-flex align-items-center">
+                    <button className="btn btn-dark me-2" onClick={toggleMute}>
+                        <i className={
+                            isMuted || volume === 0 
+                                ? "bi bi-volume-mute-fill" 
+                                : volume < 50 
+                                ? "bi bi-volume-down-fill"
+                                : "bi bi-volume-up-fill"
+                            }>
+                        </i>
+                    </button>
+
+                    <input 
+                        type="range" className="form-range" 
+                        min="0" max="100" value={volume} 
+                        onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                        style={{width: "100px"}}
+                    />
+                </div>
             </div>
             <div className="flex-grow-1 mx-3">
                 <input 

@@ -10,6 +10,8 @@ export default function VideoPlayer() {
     const [duration, setDuration] = useState(0);
     const animationRef = useRef(null);  
     const [currentTime, setCurrentTime] = useState(0);
+    const [volume, setVolume] = useState(100);
+    const [isMuted, setIsMuted] = useState(false);
 
     const handleFileSelect = (file) => {
         const url = URL.createObjectURL(file);
@@ -61,6 +63,7 @@ export default function VideoPlayer() {
 
         video.addEventListener("loadedmetadata", setVideoDuration);
         video.addEventListener("ended", handleVideoEnd);
+        videoRef.current.volume = volume / 100;
 
         return () => {
             video.removeEventListener("loadedmetadata", setVideoDuration);
@@ -75,6 +78,34 @@ export default function VideoPlayer() {
         const time = (value / 100) * duration;
         videoRef.current.currentTime = time;
         setProgress(value);
+    }
+
+
+    const handleVolumeChange = (value) => {
+        if (!videoRef.current) return;
+        
+        const newVolume = value / 100;
+
+        videoRef.current.volume = newVolume;
+        setVolume(value);
+
+        if(newVolume === 0){
+            setIsMuted(true);
+        } else {
+            setIsMuted(false);
+        }
+    }
+
+    const toggleMute = () => {
+        if (!videoRef.current) return;
+        
+        if(isMuted){
+            videoRef.current.volume = volume / 100;
+            setIsMuted(false);
+        } else {
+            videoRef.current.volume = 0;
+            setIsMuted(true);
+        }
     }
 
     return (
@@ -97,6 +128,10 @@ export default function VideoPlayer() {
                 duration={duration}
                 handleSeek={handleSeek}
                 currentTime={currentTime}
+                volume={volume}
+                isMuted={isMuted}
+                toggleMute={toggleMute}
+                handleVolumeChange={handleVolumeChange}
             />
         </div>
     );
