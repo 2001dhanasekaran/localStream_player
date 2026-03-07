@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import FilePicker from "../FilePicker";
-import ControlBar from "./controlBar";
+import ControlBar from "./ControlBar";
 
 export default function VideoPlayer() {
     const videoRef = useRef(null);
