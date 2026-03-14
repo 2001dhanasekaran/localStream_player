@@ -1,7 +1,20 @@
-export default function ControlBar({ 
-    togglePlay, isPlaying, progress, duration, handleSeek, currentTime, 
-    volume, isMuted, toggleMute, handleVolumeChange 
-}) {
+export default function ControlBar(
+    { 
+        togglePlay, 
+        isPlaying, 
+        progress, 
+        duration, 
+        handleSeek, 
+        currentTime, 
+        volume, 
+        isMuted, 
+        toggleMute, 
+        handleVolumeChange, 
+        toggleFullScreen,
+        isFullScreen,
+        showControls
+    }
+) {
     const formatTime = (time) => {
         if(!time || isNaN(time)) return "00:00:00";
 
@@ -16,7 +29,12 @@ export default function ControlBar({
     }
     
     return (
-        <div className="bg-secondary p-2 d-flex align-items-center justify-content-center">
+        <div className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 d-flex align-items-center"
+            style={{
+                opacity: showControls ? 1 : 0, 
+                transition: "opacity 0.4s ease"
+            }}
+        >
             <div className="d-flex align-items-center">
                 <button className="btn btn-dark me-2" onClick={togglePlay}>
                     <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"}></i>
@@ -39,9 +57,10 @@ export default function ControlBar({
                         onChange={(e) => handleVolumeChange(Number(e.target.value))}
                         style={{width: "100px"}}
                     />
+                    <div className="ms-1">{volume}%</div>
                 </div>
             </div>
-            <div className="flex-grow-1 mx-3">
+            <div className="flex-grow-1 mx-3 mt-2">
                 <input 
                     type="range" className="form-range" 
                     min="0" max="100" value={progress}
@@ -52,8 +71,8 @@ export default function ControlBar({
                 {formatTime(currentTime)} / {formatTime(duration)}
             </div>
             <div>
-                <button className="btn btn-dark me-2">
-                    <i className="bi bi-fullscreen"></i>
+                <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
+                    <i className={isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"}></i>
                 </button>
             </div>
         </div>
