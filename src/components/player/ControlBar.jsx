@@ -29,10 +29,10 @@ export default function ControlBar(
     }
     
     return (
-        <div className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 d-flex align-items-center"
+        <div className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 align-items-center"
             style={{
-                opacity: showControls ? 1 : 0, 
-                transition: "opacity 0.4s ease"
+                display: showControls ? "flex" : "none",
+                zIndex: 10
             }}
         >
             <div className="d-flex align-items-center">

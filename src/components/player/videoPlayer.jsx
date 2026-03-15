@@ -16,6 +16,11 @@ export default function VideoPlayer() {
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const controlsTimeoutRef = useRef(null);
+    const [showCursor, setShowCursor] = useState(true);
+    const [showVolume, setShowVolume] = useState(false);
+    const volumeOverlayTimer = useRef(null);
+    const [seekIndicator, setSeekIndicator] = useState(null);
+    const seekOverlayTimer = useRef(null);
 
     const handleFileSelect = (file) => {
         const url = URL.createObjectURL(file);
@@ -108,7 +113,8 @@ export default function VideoPlayer() {
             video.muted = false;
             setIsMuted(false);
         }
-    }
+        showVolumeOverlay();
+    };
 
     const toggleMute = () => {
         if (!videoRef.current) return;
@@ -117,7 +123,7 @@ export default function VideoPlayer() {
 
         video.muted= !video.muted;
         setIsMuted(video.muted);
-    }
+    };
 
     const toggleFullScreen = () => {
         if(!containerRef.current) return;
@@ -148,10 +154,10 @@ export default function VideoPlayer() {
                     video.currentTime-= 5;
                     break;
                 case "arrowup":
-                    handleVolumeChange(Math.min(volume + 10, 100));
+                    handleVolumeChange(Math.min(video.volume * 100 + 10, 100));
                     break;
                 case "arrowdown":
-                    handleVolumeChange(Math.max(volume - 10, 0));
+                    handleVolumeChange(Math.max(video.volume * 100 - 10, 0));
                     break;
                 case "f":
                     toggleFullScreen();
@@ -169,10 +175,11 @@ export default function VideoPlayer() {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [volume, isMuted]);
+    }, []);
 
     const handleMouseMove = () => {
         setShowControls(true);
+        setShowCursor(true);
 
         if (controlsTimeoutRef.current) {
             clearTimeout(controlsTimeoutRef.current);
@@ -180,17 +187,67 @@ export default function VideoPlayer() {
 
         controlsTimeoutRef.current = setTimeout(() => {
             setShowControls(false);
+            setShowCursor(false);
         }, 3000);
-    }
+    };
+
+    const showVolumeOverlay = () => {
+        setShowVolume(true);
+
+        if(volumeOverlayTimer.current){
+            clearTimeout(volumeOverlayTimer.current);
+        }
+
+        volumeOverlayTimer.current = setTimeout(() => {
+            setShowVolume(false);
+        }, 3000);
+
+    };
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(volumeOverlayTimer.current);
+            clearTimeout(controlsTimeoutRef.current);
+        };
+    }, []);
+
+    const handleDoubleClick = (event) => {
+        if(!videoRef.current || !containerRef.current) return;
+
+        const video = videoRef.current;
+        const containerWidth = containerRef.current.clientWidth;
+        const clickPosition = event.clientX;
+
+        if(clickPosition < containerWidth / 2){
+            video.currentTime -= 10;
+            setSeekIndicator("Backward");
+        } else {
+            video.currentTime += 10;
+            setSeekIndicator("Forward");
+        }
+
+        if(seekOverlayTimer.current){
+            clearTimeout(seekOverlayTimer.current);
+        }
+
+        seekOverlayTimer.current= setTimeout(()=>{
+            setSeekIndicator(null);
+        },800);
+    };
 
     return (
-        <div ref={containerRef} onMouseMove={handleMouseMove} className="w-100 h-100 position-relative"> 
+        <div className="w-100 h-100 position-relative"
+            ref={containerRef} onMouseMove={handleMouseMove} 
+            style={{cursor: showCursor ? "default" : "none"}}
+        >
             <div className="w-100 h-100 bg-black d-flex justify-content-center align-items-center overflow-hidden">                
                 {videoUrl ? (
                     <video 
                         ref={videoRef} src={videoUrl} 
                         className="w-100 h-100" 
-                        style={{objectFit: "contain"}} 
+                        style={{objectFit: "contain"}}
+                        onClick={togglePlay}
+                        onDoubleClick={handleDoubleClick}
                     />
                 ) : (
                     <FilePicker onFileSelect={handleFileSelect} />
@@ -212,6 +269,44 @@ export default function VideoPlayer() {
                 isFullScreen={isFullScreen}
                 showControls={showControls}
             />
+            {showVolume && (
+                <div className="position-absolute top-0 end-0 text-white px-3 py-2 m-3 rounded" 
+                    style={
+                        {
+                            backgroundColor: "rgba(0,0,0,0.6)",
+                            fontSize: "18px",
+                            fontWeight: "500",
+                            zIndex: 20,
+                        }
+                    }
+                >
+                    Volume: {volume}%
+                </div>
+            )}
+            {seekIndicator && (
+                <div className="position-absolute top-50 start-50 translate-middle text-white px-4 py-2 rounded d-flex align-items-center gap-2" 
+                    style={
+                        {
+                            backgroundColor: "rgba(0,0,0,0.6)",
+                            fontSize: "18px",
+                            fontWeight: "500",
+                            zIndex: 20,
+                        }
+                    }
+                >
+                    {seekIndicator === "Forward" ? (
+                            <>
+                                <i className="bi-fast-forward-fill fs-2"></i>
+                                <span>10s</span>
+                            </>
+                        ) : (
+                            <>
+                                <i className="bi-rewind-fill fs-2"></i>
+                                <span>10s</span>
+                            </>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
