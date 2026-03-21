@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useState } from "react";
+
 export default function ControlBar(
     { 
         togglePlay, 
@@ -12,9 +15,27 @@ export default function ControlBar(
         handleVolumeChange, 
         toggleFullScreen,
         isFullScreen,
-        showControls
+        showControls,
+        playbackSpeed,
+        handlePlaybackSpeed
     }
 ) {
+    const [showSpeedMenu, setShowSpeedMenu]= useState(false);
+
+    useEffect(()=>{
+        const handleClickOutside = ()=>{
+            setShowSpeedMenu(false);
+        };
+
+        if(showSpeedMenu){
+            window.addEventListener("click", handleClickOutside);
+        }
+
+        return ()=>{
+            window.addEventListener("click", handleClickOutside);
+        }
+    },[showSpeedMenu]);
+
     const formatTime = (time) => {
         if(!time || isNaN(time)) return "00:00:00";
 
@@ -69,6 +90,35 @@ export default function ControlBar(
             </div>
             <div className="text-white small me-3">
                 {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
+            <div className="position-relative me-2">
+                <button className="btn btn-dark" onClick={(e)=>
+                    {
+                        e.stopPropagation();
+                        setShowSpeedMenu(prev=> !prev);
+                    }
+                }
+                    >{playbackSpeed}x
+                    <i className={`ms-2 ${showSpeedMenu? "bi bi-caret-up-fill":"bi bi-caret-down-fill"}`}></i>
+                    </button>
+                {showSpeedMenu && (
+                    <div className="speed-container d-flex gap-2">
+                        {[0.5, 1, 1.25, 1.5, 2].map((speed)=>(
+                            <button 
+                                key={speed} 
+                                onClick={(e)=>
+                                    {
+                                        e.stopPropagation();
+                                        handlePlaybackSpeed(speed);
+                                    }
+                                }
+                                className={`speed-btn ${playbackSpeed===speed ? "active" : ""}`}
+                            >
+                                {speed}x
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
             <div>
                 <button className="btn btn-dark me-2" onClick={toggleFullScreen}>

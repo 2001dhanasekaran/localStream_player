@@ -20,6 +20,40 @@ html, body, #root {
   padding: 0;
 }
 
+.speed-container {
+  position: absolute;
+  bottom: 45px;
+  right: -60px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 10px;
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.speed-btn {
+  border: none;
+  padding: 6px 12px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s ease;
+  border-radius: 20px;
+}
+
+.speed-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.speed-btn.active{
+  background: white;
+  color: black;
+  font-weight: 600;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

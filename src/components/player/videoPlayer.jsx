@@ -21,6 +21,7 @@ export default function VideoPlayer() {
     const volumeOverlayTimer = useRef(null);
     const [seekIndicator, setSeekIndicator] = useState(null);
     const seekOverlayTimer = useRef(null);
+    const [playbackSpeed, setPlaybackSpeed]= useState(1);
 
     const handleFileSelect = (file) => {
         const url = URL.createObjectURL(file);
@@ -235,6 +236,13 @@ export default function VideoPlayer() {
         },800);
     };
 
+    const handlePlaybackSpeed=(speed)=>{
+        if(!videoRef.current) return;
+
+        videoRef.current.playbackRate= speed;
+        setPlaybackSpeed(speed);
+    }
+
     return (
         <div className="w-100 h-100 position-relative"
             ref={containerRef} onMouseMove={handleMouseMove} 
@@ -268,6 +276,8 @@ export default function VideoPlayer() {
                 toggleFullScreen={toggleFullScreen}
                 isFullScreen={isFullScreen}
                 showControls={showControls}
+                playbackSpeed={playbackSpeed}
+                handlePlaybackSpeed={handlePlaybackSpeed}
             />
             {showVolume && (
                 <div className="position-absolute top-0 end-0 text-white px-3 py-2 m-3 rounded" 
