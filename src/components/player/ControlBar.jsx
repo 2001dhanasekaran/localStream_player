@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ControlBar(
     { 
@@ -17,7 +16,8 @@ export default function ControlBar(
         isFullScreen,
         showControls,
         playbackSpeed,
-        handlePlaybackSpeed
+        handlePlaybackSpeed,
+        handleUserInteraction
     }
 ) {
     const [showSpeedMenu, setShowSpeedMenu]= useState(false);
@@ -32,7 +32,7 @@ export default function ControlBar(
         }
 
         return ()=>{
-            window.addEventListener("click", handleClickOutside);
+            window.removeEventListener("click", handleClickOutside);
         }
     },[showSpeedMenu]);
 
@@ -95,6 +95,7 @@ export default function ControlBar(
                 <button className="btn btn-dark" onClick={(e)=>
                     {
                         e.stopPropagation();
+                        handleUserInteraction();
                         setShowSpeedMenu(prev=> !prev);
                     }
                 }
@@ -102,13 +103,14 @@ export default function ControlBar(
                     <i className={`ms-2 ${showSpeedMenu? "bi bi-caret-up-fill":"bi bi-caret-down-fill"}`}></i>
                     </button>
                 {showSpeedMenu && (
-                    <div className="speed-container d-flex gap-2">
+                    <div className={`speed-container d-flex gap-2 ${showSpeedMenu ? "show" : ""}`}>
                         {[0.5, 1, 1.25, 1.5, 2].map((speed)=>(
                             <button 
                                 key={speed} 
                                 onClick={(e)=>
                                     {
                                         e.stopPropagation();
+                                        handleUserInteraction();
                                         handlePlaybackSpeed(speed);
                                     }
                                 }

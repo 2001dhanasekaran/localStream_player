@@ -30,6 +30,14 @@ html, body, #root {
   backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+}
+
+.speed-container.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .speed-btn {

@@ -5,6 +5,7 @@ import ControlBar from "./ControlBar";
 export default function VideoPlayer() {
     const videoRef = useRef(null);
     const [videoUrl, setVideoUrl] = useState(null);
+    const [videoName, setVideoName]= useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -22,10 +23,13 @@ export default function VideoPlayer() {
     const [seekIndicator, setSeekIndicator] = useState(null);
     const seekOverlayTimer = useRef(null);
     const [playbackSpeed, setPlaybackSpeed]= useState(1);
+    const [savedTime, setSavedTime]= useState(null);
+    const [showResume, setShowResume]= useState(false);
 
     const handleFileSelect = (file) => {
         const url = URL.createObjectURL(file);
         setVideoUrl(url);
+        setVideoName(file.name);
     }
 
     const smoothProgressUpdate = () => {
@@ -42,13 +46,19 @@ export default function VideoPlayer() {
         animationRef.current = requestAnimationFrame(smoothProgressUpdate);
     };
 
+    const startPlayback=()=>{
+        if(!videoRef.current) return;
+
+        videoRef.current.play();
+        setIsPlaying(true);
+        animationRef.current=requestAnimationFrame(smoothProgressUpdate);
+    }
+
     const togglePlay = () => {
         if (!videoRef.current) return;
 
         if (videoRef.current.paused) {
-            videoRef.current.play();
-            setIsPlaying(true);
-            animationRef.current = requestAnimationFrame(smoothProgressUpdate);
+            startPlayback();
         } else {
             videoRef.current.pause();
             setIsPlaying(false);
@@ -56,19 +66,26 @@ export default function VideoPlayer() {
         }
     }
 
-
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const setVideoDuration = () => {
             setDuration(video.duration);
-        }
+
+            const time= localStorage.getItem(videoName);
+
+            if(time && Number(time)>5 && Number(time)< video.duration-5){
+                setSavedTime(time);
+                setShowResume(true);
+            }
+        };
 
         const handleVideoEnd = () => {
             setProgress(100);
             setIsPlaying(false);
             cancelAnimationFrame(animationRef.current);
+            if(videoName) localStorage.removeItem(videoName);
         }
         
         const handleFullScreenChange = () => {
@@ -91,6 +108,18 @@ export default function VideoPlayer() {
             document.removeEventListener("fullscreenchange", handleFullScreenChange);
         };
     }, [videoUrl]);
+
+    useEffect(()=>{
+        if(!videoUrl) return;
+
+        const interval= setInterval(()=>{
+            if(videoRef.current && !videoRef.current.paused) {
+                localStorage.setItem(videoName, videoRef.current.currentTime);
+            }
+        },2000);
+
+        return(()=>clearInterval(interval));
+    },[videoUrl]);
 
     const handleSeek = (value) => {
         if (!videoRef.current) return;
@@ -178,7 +207,7 @@ export default function VideoPlayer() {
         };
     }, []);
 
-    const handleMouseMove = () => {
+    const handleUserInteraction = () => {
         setShowControls(true);
         setShowCursor(true);
 
@@ -241,11 +270,29 @@ export default function VideoPlayer() {
 
         videoRef.current.playbackRate= speed;
         setPlaybackSpeed(speed);
-    }
+    };
+
+    const handleResume=()=>{
+        const video= videoRef.current;
+        video.currentTime= savedTime;
+        startPlayback(); 
+        setShowResume(false);
+    };
+
+    const handleRestart=()=>{
+        const video= videoRef.current;
+        video.currentTime= 0;
+        startPlayback();       
+        setShowResume(false);
+    };
+
+    useEffect(()=>{
+        if(showResume && videoRef.current) videoRef.current.pause();
+    },[showResume]);
 
     return (
         <div className="w-100 h-100 position-relative"
-            ref={containerRef} onMouseMove={handleMouseMove} 
+            ref={containerRef} onMouseMove={handleUserInteraction} onClick={handleUserInteraction}
             style={{cursor: showCursor ? "default" : "none"}}
         >
             <div className="w-100 h-100 bg-black d-flex justify-content-center align-items-center overflow-hidden">                
@@ -278,6 +325,7 @@ export default function VideoPlayer() {
                 showControls={showControls}
                 playbackSpeed={playbackSpeed}
                 handlePlaybackSpeed={handlePlaybackSpeed}
+                handleUserInteraction={handleUserInteraction}
             />
             {showVolume && (
                 <div className="position-absolute top-0 end-0 text-white px-3 py-2 m-3 rounded" 
@@ -315,6 +363,24 @@ export default function VideoPlayer() {
                                 <span>10s</span>
                             </>
                     )}
+                </div>
+            )}
+            {showResume && (
+                <div className="position-absolute top-50 start-50 translate-middle text-center"
+                    style={{
+                        background: "rgba(0,0,0,0.7)",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        zIndex: 30
+                    }}
+                >
+                    <div className="text-white mb-3">
+                        Resume from {Math.floor(savedTime)}s ?
+                    </div>
+                    <div className="d-flex gap-3 justify-content-center">
+                        <button className="btn btn-light" onClick={handleResume}>Resume</button>
+                        <button className="btn btn-outline-light" onClick={handleRestart}>Start Over</button>
+                    </div>
                 </div>
             )}
         </div>
