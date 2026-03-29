@@ -17,10 +17,15 @@ export default function ControlBar(
         showControls,
         playbackSpeed,
         handlePlaybackSpeed,
-        handleUserInteraction
+        handleUserInteraction,
+        changeBass,
+        changeMid,
+        changeTreble
+
     }
 ) {
     const [showSpeedMenu, setShowSpeedMenu]= useState(false);
+    const [showEQ, setShowEQ]= useState(false);
 
     useEffect(()=>{
         const handleClickOutside = ()=>{
@@ -126,7 +131,49 @@ export default function ControlBar(
                 <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
                     <i className={isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"}></i>
                 </button>
+                <button className="btn btn-dark me-2" onClick={()=>setShowEQ(!showEQ)}>EQ</button>
             </div>
+            {showEQ && 
+            <div className="position-absolute bottom-100 end-0 m-3 p-3 rounded"
+                style={{
+                    background: "rgba(0,0,0,0.6)",
+                    backdropFilter: "blur(10px)",
+                    zIndex: 25,
+                    width: "220px"
+                }}
+            >
+                <div className="text-white mb-2">Equalizer</div>
+
+                <label className="text-white small">Bass</label>
+                <input
+                    type="range"
+                    min="-10"
+                    max="10"
+                    step="1"
+                    className="form-range"
+                    onChange={(e)=>changeBass(e.target.value)}
+                />
+                <label className="text-white small">Mid</label>
+                <input
+                    type="range"
+                    min="-10"
+                    max="10"
+                    step="1"
+                    className="form-range"
+                    onChange={(e)=>changeMid(e.target.value)}
+                />
+                <label className="text-white small">Treble</label>
+                <input
+                    type="range"
+                    min="-10"
+                    max="10"
+                    step="1"
+                    className="form-range"
+                    onChange={(e)=>changeTreble(e.target.value)}
+                />
+
+            </div>
+}
         </div>
 
     );

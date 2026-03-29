@@ -25,6 +25,12 @@ export default function VideoPlayer() {
     const [playbackSpeed, setPlaybackSpeed]= useState(1);
     const [savedTime, setSavedTime]= useState(null);
     const [showResume, setShowResume]= useState(false);
+    const audioContextRef= useRef(null);
+    const sourceRef= useRef(null);
+    const bassRef= useRef(null);
+    const midRef= useRef(null);
+    const trebleRef= useRef(null);
+
 
     const handleFileSelect = (file) => {
         const url = URL.createObjectURL(file);
@@ -57,6 +63,14 @@ export default function VideoPlayer() {
     const togglePlay = () => {
         if (!videoRef.current) return;
 
+        if(!audioContextRef.current) {
+            setUpAudio();
+        }
+
+        if(audioContextRef.current?.state==="suspended"){
+            audioContextRef.current.resume();
+        }
+
         if (videoRef.current.paused) {
             startPlayback();
         } else {
@@ -73,7 +87,10 @@ export default function VideoPlayer() {
         const setVideoDuration = () => {
             setDuration(video.duration);
 
-            const time= localStorage.getItem(videoName);
+            let time=null;
+            if(videoName){
+                time= localStorage.getItem(videoName);
+            };
 
             if(time && Number(time)>5 && Number(time)< video.duration-5){
                 setSavedTime(time);
@@ -290,6 +307,58 @@ export default function VideoPlayer() {
         if(showResume && videoRef.current) videoRef.current.pause();
     },[showResume]);
 
+    const setUpAudio=()=>{
+        if(audioContextRef.current) return;
+
+        const video= videoRef.current;
+        if(!video) return;
+
+        const AudioCtx= window.AudioContext || window.webkitAudioContext;
+        const audioContext= new AudioCtx();
+        const source= audioContext.createMediaElementSource(video);
+
+        const bass= audioContext.createBiquadFilter();
+        bass.type="lowshelf";
+        bass.frequency.value=200;
+
+        const mid=audioContext.createBiquadFilter();
+        mid.type="peaking";
+        mid.frequency.value=1000;
+
+        const treble= audioContext.createBiquadFilter();
+        treble.type="highshelf";
+        treble.frequency.value=3000;
+
+        source.connect(bass);
+        bass.connect(mid);
+        mid.connect(treble);
+        treble.connect(audioContext.destination)
+
+        audioContextRef.current= audioContext;
+        sourceRef.current=source;
+        bassRef.current=bass;
+        midRef.current=mid;
+        trebleRef.current=treble;
+    };
+
+    const changeBass=(value)=>{
+        if(bassRef.current){
+            bassRef.current.gain.value= value;
+        }
+    };
+
+    const changeMid=(value)=>{
+        if(midRef.current){
+            midRef.current.gain.value=value;
+        }
+    };
+
+    const changeTreble=(value)=>{
+        if(trebleRef.current){
+            trebleRef.current.gain.value=value;
+        }
+    };
+
     return (
         <div className="w-100 h-100 position-relative"
             ref={containerRef} onMouseMove={handleUserInteraction} onClick={handleUserInteraction}
@@ -326,6 +395,9 @@ export default function VideoPlayer() {
                 playbackSpeed={playbackSpeed}
                 handlePlaybackSpeed={handlePlaybackSpeed}
                 handleUserInteraction={handleUserInteraction}
+                changeBass={changeBass}
+                changeMid={changeMid}
+                changeTreble={changeTreble}
             />
             {showVolume && (
                 <div className="position-absolute top-0 end-0 text-white px-3 py-2 m-3 rounded" 
