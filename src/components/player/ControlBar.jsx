@@ -1,180 +1,186 @@
 import { useEffect, useState } from "react";
+import { formatTime } from "../../utils/formateTIme";
 
-export default function ControlBar(
-    { 
-        togglePlay, 
-        isPlaying, 
-        progress, 
-        duration, 
-        handleSeek, 
-        currentTime, 
-        volume, 
-        isMuted, 
-        toggleMute, 
-        handleVolumeChange, 
-        toggleFullScreen,
-        isFullScreen,
-        showControls,
-        playbackSpeed,
-        handlePlaybackSpeed,
-        handleUserInteraction,
-        changeBass,
-        changeMid,
-        changeTreble
+export default function ControlBar({
+  videoRef,
+  togglePlay,
+  isPlaying,
+  progress,
+  duration,
+  handleSeek,
+  currentTime,
+  volume,
+  isMuted,
+  toggleMute,
+  handleVolumeChange,
+  toggleFullScreen,
+  isFullScreen,
+  showControls,
+  playbackSpeed,
+  handlePlaybackSpeed,
+  handleUserInteraction,
+  changeBass,
+  changeMid,
+  changeTreble,
+}) {
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
+  const [showEQ, setShowEQ] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowSpeedMenu(false);
+    };
+
+    if (showSpeedMenu) {
+      window.addEventListener("click", handleClickOutside);
     }
-) {
-    const [showSpeedMenu, setShowSpeedMenu]= useState(false);
-    const [showEQ, setShowEQ]= useState(false);
 
-    useEffect(()=>{
-        const handleClickOutside = ()=>{
-            setShowSpeedMenu(false);
-        };
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [showSpeedMenu]);
 
-        if(showSpeedMenu){
-            window.addEventListener("click", handleClickOutside);
-        }
+  return (
+    <div
+      className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 align-items-center"
+      style={{
+        display: showControls ? "flex" : "none",
+        zIndex: 10,
+      }}
+    >
+      <div className="d-flex align-items-center">
+        <button className="btn btn-dark me-2" onClick={togglePlay}>
+          <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"}></i>
+        </button>
+        <div className="d-flex align-items-center">
+          <button className="btn btn-dark me-2" onClick={toggleMute}>
+            <i
+              className={
+                isMuted || volume === 0
+                  ? "bi bi-volume-mute-fill"
+                  : volume < 50
+                    ? "bi bi-volume-down-fill"
+                    : "bi bi-volume-up-fill"
+              }
+            ></i>
+          </button>
 
-        return ()=>{
-            window.removeEventListener("click", handleClickOutside);
-        }
-    },[showSpeedMenu]);
-
-    const formatTime = (time) => {
-        if(!time || isNaN(time)) return "00:00:00";
-
-        const hours = Math.floor(time / 3600);
-        const minutes = Math.floor((time % 3600) / 60);
-        const seconds = Math.floor(time % 60);
-
-        const h= hours.toString().padStart(2, '0');
-        const m= minutes.toString().padStart(2, '0');
-        const s= seconds.toString().padStart(2, '0');
-        return `${h}:${m}:${s}`;
-    }
-    
-    return (
-        <div className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 align-items-center"
-            style={{
-                display: showControls ? "flex" : "none",
-                zIndex: 10
-            }}
-        >
-            <div className="d-flex align-items-center">
-                <button className="btn btn-dark me-2" onClick={togglePlay}>
-                    <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"}></i>
-                </button>
-                <div className="d-flex align-items-center">
-                    <button className="btn btn-dark me-2" onClick={toggleMute}>
-                        <i className={
-                            isMuted || volume === 0 
-                                ? "bi bi-volume-mute-fill" 
-                                : volume < 50 
-                                ? "bi bi-volume-down-fill"
-                                : "bi bi-volume-up-fill"
-                            }>
-                        </i>
-                    </button>
-
-                    <input 
-                        type="range" className="form-range" 
-                        min="0" max="100" value={volume} 
-                        onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                        style={{width: "100px"}}
-                    />
-                    <div className="ms-1">{volume}%</div>
-                </div>
-            </div>
-            <div className="flex-grow-1 mx-3 mt-2">
-                <input 
-                    type="range" className="form-range" 
-                    min="0" max="100" value={progress}
-                    onChange={(e) => handleSeek(Number(e.target.value))}
-                />
-            </div>
-            <div className="text-white small me-3">
-                {formatTime(currentTime)} / {formatTime(duration)}
-            </div>
-            <div className="position-relative me-2">
-                <button className="btn btn-dark" onClick={(e)=>
-                    {
-                        e.stopPropagation();
-                        handleUserInteraction();
-                        setShowSpeedMenu(prev=> !prev);
-                    }
-                }
-                    >{playbackSpeed}x
-                    <i className={`ms-2 ${showSpeedMenu? "bi bi-caret-up-fill":"bi bi-caret-down-fill"}`}></i>
-                    </button>
-                {showSpeedMenu && (
-                    <div className={`speed-container d-flex gap-2 ${showSpeedMenu ? "show" : ""}`}>
-                        {[0.5, 1, 1.25, 1.5, 2].map((speed)=>(
-                            <button 
-                                key={speed} 
-                                onClick={(e)=>
-                                    {
-                                        e.stopPropagation();
-                                        handleUserInteraction();
-                                        handlePlaybackSpeed(speed);
-                                    }
-                                }
-                                className={`speed-btn ${playbackSpeed===speed ? "active" : ""}`}
-                            >
-                                {speed}x
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-            <div>
-                <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
-                    <i className={isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"}></i>
-                </button>
-                <button className="btn btn-dark me-2" onClick={()=>setShowEQ(!showEQ)}>EQ</button>
-            </div>
-            {showEQ && 
-            <div className="position-absolute bottom-100 end-0 m-3 p-3 rounded"
-                style={{
-                    background: "rgba(0,0,0,0.6)",
-                    backdropFilter: "blur(10px)",
-                    zIndex: 25,
-                    width: "220px"
-                }}
-            >
-                <div className="text-white mb-2">Equalizer</div>
-
-                <label className="text-white small">Bass</label>
-                <input
-                    type="range"
-                    min="-10"
-                    max="10"
-                    step="1"
-                    className="form-range"
-                    onChange={(e)=>changeBass(e.target.value)}
-                />
-                <label className="text-white small">Mid</label>
-                <input
-                    type="range"
-                    min="-10"
-                    max="10"
-                    step="1"
-                    className="form-range"
-                    onChange={(e)=>changeMid(e.target.value)}
-                />
-                <label className="text-white small">Treble</label>
-                <input
-                    type="range"
-                    min="-10"
-                    max="10"
-                    step="1"
-                    className="form-range"
-                    onChange={(e)=>changeTreble(e.target.value)}
-                />
-
-            </div>
-}
+          <input
+            type="range"
+            className="form-range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => handleVolumeChange(Number(e.target.value))}
+            style={{ width: "100px" }}
+          />
+          <div className="ms-1">{volume}%</div>
         </div>
+      </div>
+      <div className="flex-grow-1 mx-3 mt-2">
+        <input
+          type="range"
+          className="form-range"
+          min="0"
+          max="100"
+          value={progress}
+          onChange={(e) => handleSeek(Number(e.target.value))}
+        />
+      </div>
+      <div className="text-white small me-3">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </div>
+      <div className="position-relative me-2">
+        <button
+          className="btn btn-dark"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleUserInteraction();
+            setShowSpeedMenu((prev) => !prev);
+          }}
+        >
+          {playbackSpeed}x
+          <i
+            className={`ms-2 ${showSpeedMenu ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"}`}
+          ></i>
+        </button>
+        {showSpeedMenu && (
+          <div
+            className={`speed-container d-flex gap-2 ${showSpeedMenu ? "show" : ""}`}
+          >
+            {[0.5, 1, 1.25, 1.5, 2].map((speed) => (
+              <button
+                key={speed}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUserInteraction();
+                  handlePlaybackSpeed(speed);
+                }}
+                className={`speed-btn ${playbackSpeed === speed ? "active" : ""}`}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
+          <i
+            className={
+              isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"
+            }
+          ></i>
+        </button>
+        <button
+          className="btn btn-dark me-2"
+          onClick={() => setShowEQ(!showEQ)}
+        >
+          EQ
+        </button>
+      </div>
+      {showEQ && (
+        <div
+          className="position-absolute bottom-100 end-0 m-3 p-3 rounded"
+          style={{
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(10px)",
+            zIndex: 25,
+            width: "220px",
+          }}
+        >
+          <div className="text-white mb-2">Equalizer</div>
 
-    );
+          <label className="text-white small">Bass</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="1"
+            className="form-range"
+            onChange={(e) => changeBass(e.target.value)}
+          />
+          <label className="text-white small">Mid</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="1"
+            className="form-range"
+            onChange={(e) => changeMid(e.target.value)}
+          />
+          <label className="text-white small">Treble</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="1"
+            className="form-range"
+            onChange={(e) => changeTreble(e.target.value)}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
