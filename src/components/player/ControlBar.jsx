@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { formatTime } from "../../utils/formateTIme";
 
 export default function ControlBar({
-  videoRef,
   togglePlay,
   isPlaying,
   progress,
@@ -24,7 +23,6 @@ export default function ControlBar({
   changeTreble,
 }) {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-
   const [showEQ, setShowEQ] = useState(false);
 
   useEffect(() => {
@@ -43,42 +41,45 @@ export default function ControlBar({
 
   return (
     <div
-      className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 align-items-center"
+      className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 d-flex align-items-center"
       style={{
         display: showControls ? "flex" : "none",
         zIndex: 10,
       }}
     >
-      <div className="d-flex align-items-center">
+      {/* Left Controls */}
+      <div className="d-flex align-items-center flex-shrink-0">
         <button className="btn btn-dark me-2" onClick={togglePlay}>
-          <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"}></i>
+          <i className={isPlaying ? "bi bi-pause-fill" : "bi bi-play-fill"} />
         </button>
-        <div className="d-flex align-items-center">
-          <button className="btn btn-dark me-2" onClick={toggleMute}>
-            <i
-              className={
-                isMuted || volume === 0
-                  ? "bi bi-volume-mute-fill"
-                  : volume < 50
-                    ? "bi bi-volume-down-fill"
-                    : "bi bi-volume-up-fill"
-              }
-            ></i>
-          </button>
 
-          <input
-            type="range"
-            className="form-range"
-            min="0"
-            max="100"
-            value={volume}
-            onChange={(e) => handleVolumeChange(Number(e.target.value))}
-            style={{ width: "100px" }}
+        <button className="btn btn-dark me-2" onClick={toggleMute}>
+          <i
+            className={
+              isMuted || volume === 0
+                ? "bi bi-volume-mute-fill"
+                : volume < 50
+                ? "bi bi-volume-down-fill"
+                : "bi bi-volume-up-fill"
+            }
           />
-          <div className="ms-1">{volume}%</div>
-        </div>
+        </button>
+
+        <input
+          type="range"
+          className="form-range"
+          min="0"
+          max="100"
+          value={volume}
+          onChange={(e) => handleVolumeChange(Number(e.target.value))}
+          style={{ width: "100px" }}
+        />
+
+        <div className="ms-2 text-white">{volume}%</div>
       </div>
-      <div className="flex-grow-1 mx-3 mt-2">
+
+      {/* Progress Bar */}
+      <div className="flex-grow-1 mx-3 mt-2" style={{ minWidth: 0 }}>
         <input
           type="range"
           className="form-range"
@@ -88,58 +89,79 @@ export default function ControlBar({
           onChange={(e) => handleSeek(Number(e.target.value))}
         />
       </div>
-      <div className="text-white small me-3">
+
+      {/* Time */}
+      <div className="text-white small me-3 flex-shrink-0">
         {formatTime(currentTime)} / {formatTime(duration)}
       </div>
-      <div className="position-relative me-2">
-        <button
-          className="btn btn-dark"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleUserInteraction();
-            setShowSpeedMenu((prev) => !prev);
-          }}
-        >
-          {playbackSpeed}x
-          <i
-            className={`ms-2 ${showSpeedMenu ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"}`}
-          ></i>
-        </button>
-        {showSpeedMenu && (
-          <div
-            className={`speed-container d-flex gap-2 ${showSpeedMenu ? "show" : ""}`}
+
+      {/* Right Controls */}
+      <div className="d-flex align-items-center flex-shrink-0">
+        {/* Playback Speed */}
+        <div className="position-relative me-2">
+          <button
+            className="btn btn-dark"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUserInteraction();
+              setShowSpeedMenu((prev) => !prev);
+            }}
           >
-            {[0.5, 1, 1.25, 1.5, 2].map((speed) => (
-              <button
-                key={speed}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUserInteraction();
-                  handlePlaybackSpeed(speed);
-                }}
-                className={`speed-btn ${playbackSpeed === speed ? "active" : ""}`}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div>
+            {playbackSpeed}x
+            <i
+              className={`ms-2 ${
+                showSpeedMenu
+                  ? "bi bi-caret-up-fill"
+                  : "bi bi-caret-down-fill"
+              }`}
+            />
+          </button>
+
+          {showSpeedMenu && (
+            <div
+              className="speed-container d-flex gap-2 position-absolute bottom-100 end-0 mb-2"
+            >
+              {[0.5, 1, 1.25, 1.5, 2].map((speed) => (
+                <button
+                  key={speed}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUserInteraction();
+                    handlePlaybackSpeed(speed);
+                    setShowSpeedMenu(false);
+                  }}
+                  className={`speed-btn ${
+                    playbackSpeed === speed ? "active" : ""
+                  }`}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Fullscreen */}
         <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
           <i
             className={
-              isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"
+              isFullScreen
+                ? "bi bi-fullscreen-exit"
+                : "bi bi-fullscreen"
             }
-          ></i>
+          />
         </button>
+
+        {/* EQ */}
         <button
-          className="btn btn-dark me-2"
-          onClick={() => setShowEQ(!showEQ)}
+          className="btn btn-dark"
+          onClick={() => setShowEQ((prev) => !prev)}
         >
           EQ
         </button>
       </div>
+
+      {/* EQ Panel */}
       {showEQ && (
         <div
           className="position-absolute bottom-100 end-0 m-3 p-3 rounded"
@@ -159,8 +181,9 @@ export default function ControlBar({
             max="10"
             step="1"
             className="form-range"
-            onChange={(e) => changeBass(e.target.value)}
+            onChange={(e) => changeBass(Number(e.target.value))}
           />
+
           <label className="text-white small">Mid</label>
           <input
             type="range"
@@ -168,8 +191,9 @@ export default function ControlBar({
             max="10"
             step="1"
             className="form-range"
-            onChange={(e) => changeMid(e.target.value)}
+            onChange={(e) => changeMid(Number(e.target.value))}
           />
+
           <label className="text-white small">Treble</label>
           <input
             type="range"
@@ -177,7 +201,7 @@ export default function ControlBar({
             max="10"
             step="1"
             className="form-range"
-            onChange={(e) => changeTreble(e.target.value)}
+            onChange={(e) => changeTreble(Number(e.target.value))}
           />
         </div>
       )}
