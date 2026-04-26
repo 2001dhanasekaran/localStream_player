@@ -26,18 +26,17 @@ export default function ControlBar({
   const [showEQ, setShowEQ] = useState(false);
 
   useEffect(() => {
-    const handleClickOutside = () => {
-      setShowSpeedMenu(false);
+    const handleClickOutside = (e) => {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(e.target)) {
+        setShowSpeedMenu(false);
+      }
     };
-
-    if (showSpeedMenu) {
-      window.addEventListener("click", handleClickOutside);
-    }
+    window.addEventListener("click", handleClickOutside);
 
     return () => {
       window.removeEventListener("click", handleClickOutside);
     };
-  }, [showSpeedMenu]);
+  }, []);
 
   return (
     <div
@@ -59,8 +58,8 @@ export default function ControlBar({
               isMuted || volume === 0
                 ? "bi bi-volume-mute-fill"
                 : volume < 50
-                ? "bi bi-volume-down-fill"
-                : "bi bi-volume-up-fill"
+                  ? "bi bi-volume-down-fill"
+                  : "bi bi-volume-up-fill"
             }
           />
         </button>
@@ -110,16 +109,14 @@ export default function ControlBar({
             {playbackSpeed}x
             <i
               className={`ms-2 ${
-                showSpeedMenu
-                  ? "bi bi-caret-up-fill"
-                  : "bi bi-caret-down-fill"
+                showSpeedMenu ? "bi bi-caret-up-fill" : "bi bi-caret-down-fill"
               }`}
             />
           </button>
 
           {showSpeedMenu && (
             <div
-              className="speed-container d-flex gap-2 position-absolute bottom-100 end-0 mb-2"
+              className={`speed-container d-flex gap-2 ${showSpeedMenu ? "show" : ""}`}
             >
               {[0.5, 1, 1.25, 1.5, 2].map((speed) => (
                 <button
@@ -145,9 +142,7 @@ export default function ControlBar({
         <button className="btn btn-dark me-2" onClick={toggleFullScreen}>
           <i
             className={
-              isFullScreen
-                ? "bi bi-fullscreen-exit"
-                : "bi bi-fullscreen"
+              isFullScreen ? "bi bi-fullscreen-exit" : "bi bi-fullscreen"
             }
           />
         </button>
