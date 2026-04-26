@@ -26,17 +26,17 @@ export default function ControlBar({
   const [showEQ, setShowEQ] = useState(false);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (speedMenuRef.current && !speedMenuRef.current.contains(e.target)) {
-        setShowSpeedMenu(false);
-      }
+    const handleClickOutside = () => {
+      setShowSpeedMenu(false);
     };
-    window.addEventListener("click", handleClickOutside);
+    if (showSpeedMenu) {
+      window.addEventListener("click", handleClickOutside);
+    }
 
     return () => {
       window.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [showSpeedMenu]);
 
   return (
     <div
