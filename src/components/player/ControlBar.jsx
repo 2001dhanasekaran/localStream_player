@@ -40,11 +40,13 @@ export default function ControlBar({
 
   return (
     <div
-      className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 d-flex align-items-center"
+      className="position-absolute bottom-0 start-0 w-100 bg-secondary p-2 align-items-center"
       style={{
         display: showControls ? "flex" : "none",
         zIndex: 10,
       }}
+      onMouseMove={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       {/* Left Controls */}
       <div className="d-flex align-items-center flex-shrink-0">

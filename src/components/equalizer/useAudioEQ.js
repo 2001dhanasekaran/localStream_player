@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { useRef } from "react";
+import { useEffect } from "react";
+import { useCallback, useRef } from "react";
 export default function useAudioEQ(videoRef) {
   const audioContextRef = useRef(null);
   const sourceRef = useRef(null);
@@ -7,11 +7,16 @@ export default function useAudioEQ(videoRef) {
   const midRef = useRef(null);
   const trebleRef = useRef(null);
 
-  const setupAudio = useCallback(() => {
-    if (audioContextRef.current) return;
-
+  const setupAudio = useCallback(async () => {
     const video = videoRef.current;
     if (!video) return;
+
+    if (audioContextRef.current) {
+      if (audioContextRef.current.state === "suspended") {
+        await audioContextRef.current.resume();
+      }
+      return;
+    }
 
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     const audioContext = new AudioCtx();
@@ -39,25 +44,34 @@ export default function useAudioEQ(videoRef) {
     bassRef.current = bass;
     midRef.current = mid;
     trebleRef.current = treble;
+    await audioContext.resume();
   }, [videoRef]);
 
-  const changeBass = (value) => {
+  const changeBass = useCallback((value) => {
     if (bassRef.current) {
       bassRef.current.gain.value = value;
     }
-  };
+  }, []);
 
-  const changeMid = (value) => {
+  const changeMid = useCallback((value) => {
     if (midRef.current) {
       midRef.current.gain.value = value;
     }
-  };
+  }, []);
 
-  const changeTreble = (value) => {
+  const changeTreble = useCallback((value) => {
     if (trebleRef.current) {
       trebleRef.current.gain.value = value;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   return {
     setupAudio,

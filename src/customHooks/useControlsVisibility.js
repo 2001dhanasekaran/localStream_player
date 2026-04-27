@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import { useCallback } from "react";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 export default function useControlsVisibility() {
   const [showControls, setShowControls] = useState(true);
@@ -20,7 +18,7 @@ export default function useControlsVisibility() {
       setShowControls(false);
       setShowCursor(false);
     }, 3000);
-  }, [3000]);
+  }, []);
 
   const handleUserInteraction = useCallback(() => {
     setShowControls(true);
@@ -30,9 +28,7 @@ export default function useControlsVisibility() {
 
   useEffect(() => {
     startHideTimer();
-    return () => {
-      clearTimer();
-    };
+    return () => clearTimer();
   }, [startHideTimer]);
 
   return { showControls, showCursor, handleUserInteraction };

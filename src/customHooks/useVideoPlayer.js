@@ -1,14 +1,22 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 
 export default function useVideoPlayer() {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const animationRef = useRef(null);
 
-  const smoothProgressUpdate = (callBack) => {
-    if (!videoRef.current) return;
+  const stopAnimation = useCallback(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    cancelAnimationFrame(animationRef.current);
+  }, []);
 
+  const smoothProgressUpdate = useCallback((callBack) => {
     const video = videoRef.current;
+
+    if (!video) return;
 
     if (!video.paused && video.duration) {
       callBack(video);
@@ -17,33 +25,43 @@ export default function useVideoPlayer() {
     animationRef.current = requestAnimationFrame(() =>
       smoothProgressUpdate(callBack),
     );
-  };
+  }, []);
 
-  const startPlayback = (callBack) => {
-    if (!videoRef.current) return;
+  const startPlayback = useCallback(
+    async (callBack) => {
+      const video = videoRef.current;
+      if (!video) return;
 
-    videoRef.current.play();
-    setIsPlaying(true);
-    animationRef.current = requestAnimationFrame(() =>
-      smoothProgressUpdate(callBack),
-    );
-  };
+      try {
+        stopAnimation();
+        await video.play();
+        setIsPlaying(true);
+        animationRef.current = requestAnimationFrame(() =>
+          smoothProgressUpdate(callBack),
+        );
+      } catch (error) {
+        console.error("Error starting video playback:", error);
+        return;
+      }
+    },
+    [smoothProgressUpdate, stopAnimation],
+  );
 
-  const togglePlay = (callBack) => {
-    if (!videoRef.current) return;
+  const togglePlay = useCallback(
+    (callBack) => {
+      const video = videoRef.current;
+      if (!video) return;
 
-    if (videoRef.current.paused) {
-      startPlayback(callBack);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-      cancelAnimationFrame(animationRef.current);
-    }
-  };
-
-  const stopAnimation = () => {
-    cancelAnimationFrame(animationRef.current);
-  };
+      if (video.paused) {
+        startPlayback(callBack);
+      } else {
+        video.pause();
+        setIsPlaying(false);
+        stopAnimation();
+      }
+    },
+    [startPlayback, stopAnimation],
+  );
 
   return {
     videoRef,

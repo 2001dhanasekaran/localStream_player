@@ -21,7 +21,7 @@ export default function VideoPlayer() {
     handleSeek,
     handleProgressUpdate,
     setProgress,
-  } = useProgress(videoRef, isPlaying);
+  } = useProgress(videoRef, isPlaying, videoUrl);
 
   const {
     volume,
@@ -65,8 +65,7 @@ export default function VideoPlayer() {
   };
 
   // Toggles play and pause state of the video
-  const handlePlayPause = () => {
-    setupAudio();
+  const handlePlayPause = async () => {
     togglePlay(handleProgressUpdate);
   };
 
@@ -208,9 +207,11 @@ export default function VideoPlayer() {
     <div
       className="w-100 h-100 position-relative"
       ref={containerRef}
-      onMouseMove={handleUserInteraction}
-      onClick={handleUserInteraction}
-      onTouchStart={handleUserInteraction}
+      onMouseMove={(e) => {
+        if (e.movementX !== 0 || e.movementY !== 0) {
+          handleUserInteraction();
+        }
+      }}
       style={{ cursor: showCursor ? "default" : "none" }}
     >
       <div className="w-100 h-100 bg-black d-flex justify-content-center align-items-center overflow-hidden">
@@ -222,6 +223,7 @@ export default function VideoPlayer() {
             style={{ objectFit: "contain" }}
             onClick={handlePlayPause}
             onDoubleClick={handleDoubleClick}
+            onPlay={setupAudio}
           />
         ) : (
           <FilePicker onFileSelect={handleFileSelect} />
@@ -266,6 +268,7 @@ export default function VideoPlayer() {
               resumePlayback();
               startPlayback(handleProgressUpdate);
             }}
+            autoFocus
           >
             Resume
           </button>
