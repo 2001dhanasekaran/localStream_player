@@ -14,6 +14,7 @@ export default function VideoPlayer() {
     useVideoPlayer();
   const [videoUrl, setVideoUrl] = useState(null);
   const [videoName, setVideoName] = useState(null);
+  const resumeButtonRef = useRef(null);
   const {
     progress,
     currentTime,
@@ -114,6 +115,14 @@ export default function VideoPlayer() {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (["INPUT", "TEXTAREA"].includes(event.target.tagName)) return;
+
+      if (showResume) {
+        if (event.key.toLowerCase() === "enter") {
+          resumePlayback();
+          startPlayback(handleProgressUpdate);
+        }
+        return;
+      }
       if (!videoRef.current) return;
 
       const video = videoRef.current;
@@ -165,6 +174,12 @@ export default function VideoPlayer() {
       clearTimeout(seekOverlayTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (showResume && resumeButtonRef.current) {
+      resumeButtonRef.current.focus();
+    }
+  }, [showResume]);
 
   // Handles double-click to seek video forward or backward
   const handleDoubleClick = (event) => {
@@ -221,7 +236,11 @@ export default function VideoPlayer() {
             src={videoUrl}
             className="w-100 h-100"
             style={{ objectFit: "contain" }}
-            onClick={handlePlayPause}
+            onClick={() => {
+              if (!showResume) {
+                handlePlayPause();
+              }
+            }}
             onDoubleClick={handleDoubleClick}
             onPlay={setupAudio}
           />
@@ -263,12 +282,12 @@ export default function VideoPlayer() {
           }}
         >
           <button
+            ref={resumeButtonRef}
             className="btn btn-dark"
             onClick={() => {
               resumePlayback();
               startPlayback(handleProgressUpdate);
             }}
-            autoFocus
           >
             Resume
           </button>
@@ -297,7 +316,7 @@ export default function VideoPlayer() {
         handleVolumeChange={handleVolumeChange}
         toggleFullScreen={toggleFullScreen}
         isFullScreen={isFullScreen}
-        showControls={showControls}
+        showControls={showControls && !showResume}
         playbackSpeed={playbackSpeed}
         handlePlaybackSpeed={handlePlaybackSpeed}
         handleUserInteraction={handleUserInteraction}
