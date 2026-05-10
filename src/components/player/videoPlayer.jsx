@@ -55,6 +55,8 @@ export default function VideoPlayer() {
   const { setupAudio, changeBass, changeMid, changeTreble } =
     useAudioEQ(videoRef);
 
+  const lastTapref = useRef(0);
+
   // Handles file selection and sets video URL and name
   const handleFileSelect = (file) => {
     if (videoUrl) {
@@ -186,10 +188,29 @@ export default function VideoPlayer() {
     if (!videoRef.current || !containerRef.current) return;
 
     const video = videoRef.current;
-    const containerWidth = containerRef.current.clientWidth;
-    const clickPosition = event.clientX;
+    const rect = containerRef.current.getBoundingClientRect();
 
-    if (clickPosition < containerWidth / 2) {
+    let clientX;
+
+    // Desktop mouse event
+    if (event.clientX !== undefined) {
+      clientX = event.clientX;
+    }
+    // Mobile touch event
+    else if (event.touches && event.touches[0]) {
+      clientX = event.touches[0].clientX;
+    }
+    // Mobile changedTouches fallback
+    else if (event.changedTouches && event.changedTouches[0]) {
+      clientX = event.changedTouches[0].clientX;
+    } else {
+      return;
+    }
+
+    const clickX = clientX - rect.left;
+    const containerWidth = rect.width;
+
+    if (clickX < containerWidth / 2) {
       video.currentTime -= 10;
       setSeekIndicator("Backward");
     } else {
@@ -218,6 +239,16 @@ export default function VideoPlayer() {
     if (showResume && videoRef.current) videoRef.current.pause();
   }, [showResume]);
 
+  const handleTouch = (event) => {
+    const currentTime = Date.now();
+    if (currentTime - lastTapref.current < 300) {
+      handleDoubleClick(event);
+    } else {
+      handleUserInteraction();
+    }
+    lastTapref.current = currentTime;
+  };
+
   return (
     <div
       className="w-100 h-100 position-relative"
@@ -243,6 +274,8 @@ export default function VideoPlayer() {
             }}
             onDoubleClick={handleDoubleClick}
             onPlay={setupAudio}
+            onTouchStart={handleTouch}
+            onTouchMove={handleUserInteraction}
           />
         ) : (
           <FilePicker onFileSelect={handleFileSelect} />

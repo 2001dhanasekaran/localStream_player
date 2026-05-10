@@ -117,3 +117,26 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+@media (max-width: 576px) {
+  .speed-container {
+    right: 0 !important;
+    width: 170px;
+    padding: 10px;
+  }
+
+  .speed-btn {
+    flex: 1 1 45%;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  .form-range {
+    height: 4px;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
