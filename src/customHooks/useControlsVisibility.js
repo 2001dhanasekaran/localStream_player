@@ -17,7 +17,7 @@ export default function useControlsVisibility() {
     controlsTimeoutRef.current = setTimeout(() => {
       setShowControls(false);
       setShowCursor(false);
-    }, 3000);
+    }, 4000);
   }, []);
 
   const handleUserInteraction = useCallback(() => {

@@ -7,6 +7,7 @@ import useVolume from "../../customHooks/useVolume";
 import useControlsVisibility from "../../customHooks/useControlsVisibility";
 import useResumePlayback from "../../customHooks/useResumePlayback";
 import useAudioEQ from "../equalizer/useAudioEQ";
+import NavBar from "./NavBar";
 
 // Main component for rendering the video player UI and handling its logic
 export default function VideoPlayer() {
@@ -260,6 +261,16 @@ export default function VideoPlayer() {
       }}
       style={{ cursor: showCursor ? "default" : "none" }}
     >
+      <NavBar
+        title={videoName}
+        showControls={showControls && !showResume}
+        playbackSpeed={playbackSpeed}
+        handlePlaybackSpeed={handlePlaybackSpeed}
+        handleUserInteraction={handleUserInteraction}
+        changeBass={changeBass}
+        changeMid={changeMid}
+        changeTreble={changeTreble}
+      />
       <div className="w-100 h-100 bg-black d-flex justify-content-center align-items-center overflow-hidden">
         {videoUrl ? (
           <video
@@ -282,7 +293,7 @@ export default function VideoPlayer() {
         )}
         {showVolume && (
           <div
-            className="position-absolute top-0 end-0 text-white m-3 px-4 py-2 rounded"
+            className="position-absolute top-0 end-0 mt-5 me-2 text-white p-2 rounded"
             style={{
               background: "rgba(0,0,0,0.6)",
               backdropFilter: "blur(10px)",
@@ -308,10 +319,10 @@ export default function VideoPlayer() {
           </div>
         )}
         <div
-          className="position-absolute top-50 start-50 translate-middle text-center"
+          className="position-absolute top-50 start-50 translate-middle flex-column align-items-center gap-3"
           style={{
             zIndex: 20,
-            display: showResume ? "block" : "none",
+            display: showResume ? "flex" : "none",
           }}
         >
           <button
@@ -325,7 +336,7 @@ export default function VideoPlayer() {
             Resume
           </button>
           <button
-            className="btn btn-secondary ms-3"
+            className="btn btn-dark"
             onClick={() => {
               restartPlayback();
               startPlayback(handleProgressUpdate);
@@ -336,6 +347,7 @@ export default function VideoPlayer() {
         </div>
       </div>
       <ControlBar
+        title={videoName}
         videoRef={videoRef}
         togglePlay={handlePlayPause}
         isPlaying={isPlaying}
@@ -350,12 +362,7 @@ export default function VideoPlayer() {
         toggleFullScreen={toggleFullScreen}
         isFullScreen={isFullScreen}
         showControls={showControls && !showResume}
-        playbackSpeed={playbackSpeed}
-        handlePlaybackSpeed={handlePlaybackSpeed}
         handleUserInteraction={handleUserInteraction}
-        changeBass={changeBass}
-        changeMid={changeMid}
-        changeTreble={changeTreble}
       />
     </div>
   );

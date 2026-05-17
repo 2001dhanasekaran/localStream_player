@@ -24,17 +24,19 @@ body,
 
 .speed-container {
   position: absolute;
-  bottom: 45px;
-  right: -100px;
+  top: 45px;
+  right: 0;
+  min-width: 210px;
   background: rgba(0, 0, 0, 0.4);
   padding: 6px 10px;
-  border-radius: 25px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  border-radius: 25px;
   z-index: 1000;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-10px);
   transition: all 0.25s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .speed-container.show {
